@@ -112,6 +112,220 @@ Here are the main classes of our Car Rental System:
 
 Here is the high-level definition for the classes described above.
 
+**Enums, data types and constants:** These enums define various types and statuses used throughout the car rental system.
+
+```java
+enum BillItemType { BASE_CHARGE, ADDITIONAL_SERVICE, FINE, OTHER }
+enum VehicleLogType { ACCIDENT, FUELING, CLEANING_SERVICE, OIL_CHANGE, REPAIR, OTHER }
+enum VanType { PASSENGER, CARGO }
+enum CarType { ECONOMY, COMPACT, INTERMEDIATE, STANDARD, FULL_SIZE, PREMIUM, LUXURY }
+enum VehicleStatus { AVAILABLE, RESERVED, LOANED, LOST, BEING_SERVICED, OTHER }
+enum ReservationStatus { ACTIVE, PENDING, CONFIRMED, COMPLETED, CANCELLED, NONE }
+enum AccountStatus { ACTIVE, CLOSED, CANCELED, BLACKLISTED, BLOCKED }
+enum PaymentStatus { UNPAID, PENDING, COMPLETED, FILLED, DECLINED, CANCELLED, ABANDONED, SETTLING, SETTLED, REFUNDED }
+```
+
+**Address Class:** Represents a physical address used for customer and rental locations.
+
+```java
+class Address {
+    private String street, city, state, zipCode, country;
+    
+    public Address(String street, String city, String state, String zipCode, String country) {
+        this.street = street;
+        this.city = city;
+        this.state = state;
+        this.zipCode = zipCode;
+        this.country = country;
+    }
+}
+```
+
+**Person Class:** Represents an individual with contact details.
+
+```java
+class Person {
+    private String name, email, phone;
+    private Address address;
+    
+    public Person(String name, Address address, String email, String phone) {
+        this.name = name;
+        this.address = address;
+        this.email = email;
+        this.phone = phone;
+    }
+}
+```
+
+**Account Class:** An abstract class representing a system user.
+
+```java
+abstract class Account {
+    private String id, password;
+    private AccountStatus status;
+    private Person person;
+
+    public Account(String id, String password, Person person, AccountStatus status) {
+        this.id = id;
+        this.password = password;
+        this.status = status;
+        this.person = person;
+    }
+    public abstract void resetPassword();
+}
+```
+
+**Member Class:** Represents a registered user who can reserve vehicles.
+
+```java
+class Member extends Account {
+    private int totalVehiclesReserved = 0;
+    public Member(String id, String password, Person person, AccountStatus status) {
+        super(id, password, person, status);
+    }
+    public void getReservations() {}
+    public void resetPassword() {}
+}
+```
+
+**Receptionist Class:** Represents an employee who manages reservations and customer details.
+
+```java
+class Receptionist extends Account {
+    public Receptionist(String id, String password, Person person, AccountStatus status) {
+        super(id, password, person, status);
+    }
+    public void searchMember(String name) {}
+    public void resetPassword() {}
+}
+```
+
+**Additional Driver Class:** Represents a secondary driver for a vehicle reservation.
+
+```java
+class AdditionalDriver {
+    private String driverId;
+    private Person person;
+    public AdditionalDriver(String driverId, Person person) {
+        this.driverId = driverId;
+        this.person = person;
+    }
+}
+```
+
+**CarRentalSystem:** Implements the Singleton pattern to manage the entire rental system.
+
+```java
+class CarRentalSystem {
+    private static CarRentalSystem instance;
+    private String name;
+    private List<CarRentalLocation> locations = new ArrayList<>();
+
+    private CarRentalSystem(String name) {
+        this.name = name;
+    }
+
+    public static synchronized CarRentalSystem getInstance(String name) {
+        if (instance == null) instance = new CarRentalSystem(name);
+        return instance;
+    }
+
+    public void addNewLocation(CarRentalLocation location) {
+        locations.add(location);
+    }
+}
+```
+
+**Vehicle Factory:** Uses the Factory pattern to create different types of vehicles.
+
+```java
+abstract class Vehicle {
+    protected String licenseNum, model, make;
+    protected int manufacturingYear, mileage;
+    protected VehicleStatus status;
+    
+    public Vehicle(String licenseNum, String model, String make, int manufacturingYear, int mileage, VehicleStatus status) {
+        this.licenseNum = licenseNum;
+        this.model = model;
+        this.make = make;
+        this.manufacturingYear = manufacturingYear;
+        this.mileage = mileage;
+        this.status = status;
+    }
+}
+```
+
+**Search Strategy Pattern:** Implements search functionality for vehicles based on type or model.
+
+```java
+interface SearchStrategy {
+    List<Vehicle> search(List<Vehicle> inventory, String query);
+}
+
+class SearchByType implements SearchStrategy {
+    public List<Vehicle> search(List<Vehicle> inventory, String query) {
+        return inventory.stream().filter(v -> v.getClass().getSimpleName().equalsIgnoreCase(query)).toList();
+    }
+}
+```
+
+**VehicleInventory Class:** Manages the inventory and allows searching using a strategy.
+
+```java
+class VehicleInventory {
+    private List<Vehicle> vehicles = new ArrayList<>();
+    private SearchStrategy searchStrategy;
+
+    public void setSearchStrategy(SearchStrategy strategy) {
+        this.searchStrategy = strategy;
+    }
+
+    public List<Vehicle> search(String query) {
+        return searchStrategy.search(vehicles, query);
+    }
+}
+```
+
+**Builder Pattern for VehicleReservation:** Facilitates flexible reservation creation.
+
+```java
+class VehicleReservation {
+    private String reservationNumber, pickupLocation, returnLocation;
+    private ReservationStatus status;
+    
+    private VehicleReservation(Builder builder) {
+        this.reservationNumber = builder.reservationNumber;
+        this.pickupLocation = builder.pickupLocation;
+        this.returnLocation = builder.returnLocation;
+        this.status = builder.status;
+    }
+
+    public static class Builder {
+        private String reservationNumber, pickupLocation, returnLocation;
+        private ReservationStatus status = ReservationStatus.ACTIVE;
+        
+        public Builder setReservationNumber(String reservationNumber) {
+            this.reservationNumber = reservationNumber;
+            return this;
+        }
+        public Builder setPickupLocation(String pickupLocation) {
+            this.pickupLocation = pickupLocation;
+            return this;
+        }
+        public Builder setReturnLocation(String returnLocation) {
+            this.returnLocation = returnLocation;
+            return this;
+        }
+        public VehicleReservation build() {
+            return new VehicleReservation(this);
+        }
+    }
+}
+```
+
+
+##########Python#####################################
+
 **Enums, data types and constants:** Here are the required enums, data types, and constants:
 
 ```python
@@ -363,4 +577,5 @@ class VehicleInventory(Search):
         return self.__vehicle_models.get(query)
 
 ```
+
 
